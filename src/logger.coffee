@@ -18,7 +18,7 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
 
 
   class Logger
-    constructor: (@$log, @base, @namespace='') ->
+    constructor: (@$log, @base, @namespace='', @currentLevel=LEVELS.error) ->
       if !_isValidLogObject(@$log)
         throw new Error('@$log is invalid')
 
@@ -42,12 +42,11 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
               @$log[level](args...)
 
       @LEVELS = LEVELS
-      @currentLevel = LEVELS.error
 
     spawn: (namespace='') ->
       if typeof(namespace) != 'string'
         throw new Error('Bad namespace given')
-      return new Logger(@$log, @base, @namespace+namespace)
+      return new Logger(@$log, @base, @namespace+namespace, @currentLevel)
         
     isEnabled: (subNamespace='') ->
       if !@doLog || LEVELS['debug'] < @currentLevel
@@ -55,18 +54,19 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
       suffix = if subNamespace != '' && !subNamespace.endsWith(':') then ':' else ''
       nemDebug.enabled(@base+@namespace+subNamespace+suffix)
     
-    enable: (namespaces) ->
+    enable: (namespaces, opts={}) ->
+      prefix = if !!opts.absoluteNamespace then @base+':' else ''
       names = namespaces.split(/[, ]/g)
       enableNames = []
       for name,i in names
         if name.length == 0
           continue
         if name[name.length-1] == '*'
-          enableNames.push(@base+':'+name)
+          enableNames.push(prefix+name)
         else if name[name.length-1] == ':'
-          enableNames.push(@base+':'+name+'*')
+          enableNames.push(prefix+name+'*')
         else
-          enableNames.push(@base+':'+name+':*')
+          enableNames.push(prefix+name+':*')
       nemDebug.enable(enableNames.join(','))
 
   @decorator = ['$log', ($delegate) ->
