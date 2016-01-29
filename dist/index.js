@@ -3,7 +3,7 @@
  *
  * @version: 0.1.7
  * @author: Nicholas McCready
- * @date: Tue Jan 26 2016 10:15:01 GMT-0500 (EST)
+ * @date: Fri Jan 29 2016 13:26:06 GMT-0500 (EST)
  * @license: MIT
  */
 var angular = require('angular');
@@ -24,105 +24,119 @@ angular.module('nemLogging').provider('nemDebug', function (){
 
   return this;
 });
-var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  slice = [].slice;
+var slice = [].slice;
 
 angular.module('nemLogging').provider('nemSimpleLogger', [
   'nemDebugProvider', function(nemDebugProvider) {
-    var LEVELS, Logger, _debugCache, _fns, _isValidLogObject, _maybeExecLevel, _wrapDebug, i, key, len, nemDebug, val;
+    var LEVELS, Logger, _debugCache, _fns, _isValidLogObject, j, key, len, nemDebug, val;
     nemDebug = nemDebugProvider.debug;
     _debugCache = {};
     _fns = ['debug', 'info', 'warn', 'error', 'log'];
     LEVELS = {};
-    for (key = i = 0, len = _fns.length; i < len; key = ++i) {
+    for (key = j = 0, len = _fns.length; j < len; key = ++j) {
       val = _fns[key];
       LEVELS[val] = key;
     }
-    _maybeExecLevel = function(level, current, fn) {
-      if (level >= current) {
-        return fn();
-      }
-    };
     _isValidLogObject = function(logObject) {
-      var isValid, j, len1;
-      isValid = false;
+      var k, len1;
       if (!logObject) {
-        return isValid;
+        return false;
       }
-      for (j = 0, len1 = _fns.length; j < len1; j++) {
-        val = _fns[j];
-        isValid = (logObject[val] != null) && typeof logObject[val] === 'function';
-        if (!isValid) {
-          break;
+      for (k = 0, len1 = _fns.length; k < len1; k++) {
+        val = _fns[k];
+        if (typeof logObject[val] !== 'function') {
+          return false;
         }
       }
-      return isValid;
-    };
-
-    /*
-      Overide logeObject.debug with a nemDebug instance
-      see: https://github.com/visionmedia/debug/blob/master/Readme.md
-     */
-    _wrapDebug = function(namespace, logObject) {
-      var debugInstance, j, len1, newLogger;
-      if (_debugCache[namespace] == null) {
-        _debugCache[namespace] = nemDebug(namespace);
-      }
-      debugInstance = _debugCache[namespace];
-      newLogger = {};
-      for (j = 0, len1 = _fns.length; j < len1; j++) {
-        val = _fns[j];
-        newLogger[val] = val === 'debug' ? debugInstance : logObject[val];
-      }
-      return newLogger;
+      return true;
     };
     Logger = (function() {
-      function Logger($log1) {
-        var fn1, j, len1, level, logFns;
+      function Logger($log1, base, namespace1) {
+        var augmentedNamespace, fn, k, len1, level, ref;
         this.$log = $log1;
-        this.spawn = bind(this.spawn, this);
-        if (!this.$log) {
-          throw 'internalLogger undefined';
-        }
+        this.base = base;
+        this.namespace = namespace1 != null ? namespace1 : '';
         if (!_isValidLogObject(this.$log)) {
-          throw '@$log is invalid';
+          throw new Error('@$log is invalid');
         }
         this.doLog = true;
-        logFns = {};
-        fn1 = (function(_this) {
-          return function(level) {
-            logFns[level] = function() {
-              var args;
-              args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-              if (_this.doLog) {
-                return _maybeExecLevel(LEVELS[level], _this.currentLevel, function() {
-                  var ref;
-                  return (ref = _this.$log)[level].apply(ref, args);
-                });
-              }
-            };
-            return _this[level] = logFns[level];
+        if (this.namespace !== '' && this.namespace[this.namespace.length - 1] !== ':') {
+          this.namespace += ':';
+        }
+        augmentedNamespace = this.base + ':' + this.namespace;
+        if (_debugCache[augmentedNamespace] == null) {
+          _debugCache[augmentedNamespace] = nemDebug(augmentedNamespace);
+        }
+        this.debugInstance = _debugCache[augmentedNamespace];
+        this.debug = (function(_this) {
+          return function() {
+            var args;
+            args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+            if (_this.doLog && LEVELS['debug'] >= _this.currentLevel) {
+              return _this.debugInstance.apply(_this, args);
+            }
           };
         })(this);
-        for (j = 0, len1 = _fns.length; j < len1; j++) {
-          level = _fns[j];
-          fn1(level);
+        ref = _fns.slice(1);
+        fn = (function(_this) {
+          return function(level) {
+            return _this[level] = function() {
+              var args, ref1;
+              args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+              if (_this.doLog && LEVELS[level] >= _this.currentLevel) {
+                return (ref1 = _this.$log)[level].apply(ref1, args);
+              }
+            };
+          };
+        })(this);
+        for (k = 0, len1 = ref.length; k < len1; k++) {
+          level = ref[k];
+          fn(level);
         }
         this.LEVELS = LEVELS;
         this.currentLevel = LEVELS.error;
       }
 
-      Logger.prototype.spawn = function(newInternalLogger) {
-        if (typeof newInternalLogger === 'string') {
-          if (!_isValidLogObject(this.$log)) {
-            throw '@$log is invalid';
-          }
-          if (!nemDebug) {
-            throw 'nemDebug is undefined this is probably the light version of this library sep debug logggers is not supported!';
-          }
-          return _wrapDebug(newInternalLogger, this.$log);
+      Logger.prototype.spawn = function(namespace) {
+        if (namespace == null) {
+          namespace = '';
         }
-        return new Logger(newInternalLogger || this.$log);
+        if (typeof namespace !== 'string') {
+          throw new Error('Bad namespace given');
+        }
+        return new Logger(this.$log, this.base, this.namespace + namespace);
+      };
+
+      Logger.prototype.isEnabled = function(subNamespace) {
+        var suffix;
+        if (subNamespace == null) {
+          subNamespace = '';
+        }
+        if (!this.doLog || LEVELS['debug'] < this.currentLevel) {
+          return false;
+        }
+        suffix = subNamespace !== '' && !subNamespace.endsWith(':') ? ':' : '';
+        return nemDebug.enabled(this.base + this.namespace + subNamespace + suffix);
+      };
+
+      Logger.prototype.enable = function(namespaces) {
+        var enableNames, i, k, len1, name, names;
+        names = namespaces.split(/[, ]/g);
+        enableNames = [];
+        for (i = k = 0, len1 = names.length; k < len1; i = ++k) {
+          name = names[i];
+          if (name.length === 0) {
+            continue;
+          }
+          if (name[name.length - 1] === '*') {
+            enableNames.push(this.base + ':' + name);
+          } else if (name[name.length - 1] === ':') {
+            enableNames.push(this.base + ':' + name + '*');
+          } else {
+            enableNames.push(this.base + ':' + name + ':*');
+          }
+        }
+        return nemDebug.enable(enableNames.join(','));
       };
 
       return Logger;
@@ -131,14 +145,14 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
     this.decorator = [
       '$log', function($delegate) {
         var log;
-        log = new Logger($delegate);
+        log = new Logger($delegate, 'frontend');
         log.currentLevel = LEVELS.debug;
         return log;
       }
     ];
     this.$get = [
       '$log', function($log) {
-        return new Logger($log);
+        return new Logger($log, 'frontend');
       }
     ];
     return this;

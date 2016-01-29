@@ -35,11 +35,6 @@ gulp.task 'wrapDebug', ->
   .pipe wrap src: 'src/wrap/debug.js'
   .pipe gulp.dest 'tmp'
 
-gulp.task 'wrapDebugLight', ->
-  gulp.src 'src/wrap/contents/debugLight.js'
-  .pipe wrap src: 'src/wrap/debug.js'
-  .pipe gulp.dest 'tmp'
-
 wrapDist = (source = 'dist/index.js', maybeLight = '', buidOutFullName = false) ->
   save(
     gulp.src(source)
@@ -51,9 +46,6 @@ wrapDist = (source = 'dist/index.js', maybeLight = '', buidOutFullName = false) 
 gulp.task 'wrapDist', ->
   wrapDist('browser.js')
 , 'cleanTmp'
-
-gulp.task 'wrapDistLight', ->
-  wrapDist('dist/index.light.js', 'light.', true)
 
 module.exports =
   header: header

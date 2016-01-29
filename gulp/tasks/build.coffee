@@ -24,6 +24,3 @@ gulp.task 'buildCommonJS', gulp.series 'wrapDebug', ->
   .pipe insert.prepend(header())
   .pipe concat 'index.js'
   .pipe gulp.dest 'dist'
-
-gulp.task 'buildLight', gulp.series 'wrapDebugLight', ->
-  build [ 'src/module.coffee', 'tmp/debugLight.js', 'src/*.coffee'], 'index.light.js'

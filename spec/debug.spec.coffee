@@ -43,35 +43,28 @@ describe 'nemLogging.nemDebug', ->
       it 'disabled logger', ->
         newLogger = @simpleLogger.spawn('worker:a')
         expect(newLogger.debug).toBeDefined()
-        expect(newLogger.debug.namespace).toBe('worker:a')
-        expect(newLogger.debug.enabled).toBeFalsy()
+        expect(newLogger.debugInstance.namespace).toBe('frontend:worker:a:')
+        expect(newLogger.debugInstance.enabled).toBeFalsy()
         ['debug', 'info', 'warn', 'error', 'log'].forEach (fnName) ->
           expect(typeof newLogger[fnName]).toBe('function')
 
       it 'enabled logger', ->
-        @subject.enable('worker:*')
+        @simpleLogger.enable('worker')
         newLogger = @simpleLogger.spawn('worker:a')
-        expect(newLogger.debug.enabled).toBeTruthy()
+        expect(newLogger.debugInstance.enabled).toBeTruthy()
 
       it 'disable an enabled logger', ->
-        @subject.enable('worker:*')
+        @simpleLogger.enable('worker:*')
         c = @simpleLogger.spawn('worker:c')
         #note this doesnt really work yet in visionmedia
         #https://github.com/visionmedia/debug/issues/150
         @subject.disable()
         d = @simpleLogger.spawn('worker:d')
-        expect(c.debug.enabled).toBeTruthy()
-        expect(d.debug.enabled).toBeTruthy()
+        expect(c.debugInstance.enabled).toBeTruthy()
+        expect(d.debugInstance.enabled).toBeTruthy()
 
 
-      it 'underlying logger is NOT still $log', ->
+      it 'underlying logger is still $log', ->
         #the ref is diff, but all logging functions are $log except debug
         newLogger = @simpleLogger.spawn('worker:b')
-        expect(newLogger.$log == @$log).toBeFalsy()
-
-      it 'throws if $log is lost', ->
-        #the ref is diff, but all logging functions are $log except debug
-        @simpleLogger.$log = undefined
-        expect =>
-          @simpleLogger.spawn('worker:c')
-        .toThrow '@$log is invalid'
+        expect(newLogger.$log == @$log).toBeTruthy()

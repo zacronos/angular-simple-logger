@@ -22,11 +22,7 @@ gulp.task 'karma', (done) ->
 gulp.task 'karmaBrowserify', (done) ->
   karmaRunner(done, require.resolve('../../karma.browserify.conf.coffee'))
 
-
-gulp.task 'karmaLight', (done) ->
-  karmaRunner(done, require.resolve('../../karma.light.conf.coffee'))
-
-gulp.task 'spec', gulp.parallel 'karma', 'karmaLight', 'karmaBrowserify'
+gulp.task 'spec', gulp.parallel 'karma', 'karmaBrowserify'
 
 doOpen = (name = '') ->
   ->
@@ -36,4 +32,4 @@ doOpen = (name = '') ->
       app: 'Google Chrome' #osx , linux: google-chrome, windows: chrome
 
 
-gulp.task 'coverage', gulp.parallel doOpen(), doOpen('Light')
+gulp.task 'coverage', gulp.parallel doOpen()
