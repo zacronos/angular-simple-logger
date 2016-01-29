@@ -36,7 +36,7 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
 
   class Logger
     constructor: (@$log) ->
-      throw 'internalLogger undefined' unless @$log
+      throw '@$log undefined' unless @$log
       throw '@$log is invalid' unless _isValidLogObject @$log
       @doLog = true
       logFns = {}
