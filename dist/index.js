@@ -1,9 +1,9 @@
 /**
  *  angular-simple-logger
  *
- * @version: 0.1.16
+ * @version: 0.1.17
  * @author: Nicholas McCready
- * @date: Tue Feb 02 2016 15:55:36 GMT-0500 (EST)
+ * @date: Tue Feb 02 2016 16:00:39 GMT-0500 (EST)
  * @license: MIT
  */
 var angular = require('angular');
