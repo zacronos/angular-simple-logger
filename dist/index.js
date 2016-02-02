@@ -1,9 +1,9 @@
 /**
  *  angular-simple-logger
  *
- * @version: 0.1.17
+ * @version: 0.1.18
  * @author: Nicholas McCready
- * @date: Tue Feb 02 2016 16:00:39 GMT-0500 (EST)
+ * @date: Tue Feb 02 2016 16:31:56 GMT-0500 (EST)
  * @license: MIT
  */
 var angular = require('angular');
@@ -139,6 +139,9 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
         var enableNames, i, k, len1, minus, name, names, prefix;
         if (opts == null) {
           opts = {};
+        }
+        if (!namespaces) {
+          return nemDebug.enable(null);
         }
         prefix = !!opts.absoluteNamespace ? '' : this.base;
         names = namespaces.split(/[, ]/g);

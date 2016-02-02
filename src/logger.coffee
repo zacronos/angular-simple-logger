@@ -64,6 +64,8 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
       nemDebug.enabled(prefix+@namespace+subNamespace+suffix)
     
     enable: (namespaces, opts={}) ->
+      if !namespaces
+        return nemDebug.enable(null)
       prefix = if !!opts.absoluteNamespace then '' else @base
       names = namespaces.split(/[, ]/g)
       enableNames = []

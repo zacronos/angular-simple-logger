@@ -131,6 +131,9 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
         if (opts == null) {
           opts = {};
         }
+        if (!namespaces) {
+          return nemDebug.enable(null);
+        }
         prefix = !!opts.absoluteNamespace ? '' : this.base;
         names = namespaces.split(/[, ]/g);
         enableNames = [];
