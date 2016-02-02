@@ -49,6 +49,7 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
               @$log[level](args...)
 
       @LEVELS = LEVELS
+      @nemDebug = nemDebug
 
     spawn: (namespace='', base=@base) ->
       if typeof(namespace) != 'string'
