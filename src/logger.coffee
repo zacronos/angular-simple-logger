@@ -24,9 +24,16 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
 
       @doLog = true
 
-      if @namespace != '' && @namespace[@namespace.length-1] != ':'
-        @namespace += ':'
-      augmentedNamespace = @base+':'+@namespace
+      if @base != '' && @base[@base.length-1] != ':'
+        @base += ':'
+      if @namespace == ''
+        augmentedNamespace = @base+':__default_namespace__:'
+        forceDebugFileAndLine = true
+      else
+        if @namespace[@namespace.length-1] != ':'
+          @namespace += ':'
+        augmentedNamespace = @base+@namespace
+      
       if !_debugCache[augmentedNamespace]?
         _debugCache[augmentedNamespace] = nemDebug(augmentedNamespace)
       @debugInstance = _debugCache[augmentedNamespace]
@@ -48,25 +55,30 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
         throw new Error('Bad namespace given')
       return new Logger(@$log, @base, @namespace+namespace, @currentLevel)
         
-    isEnabled: (subNamespace='') ->
+    isEnabled: (subNamespace='', opts={}) ->
       if !@doLog || LEVELS['debug'] < @currentLevel
         return false
-      suffix = if subNamespace != '' && !subNamespace.endsWith(':') then ':' else ''
-      nemDebug.enabled(@base+@namespace+subNamespace+suffix)
+      prefix = if !!opts.absoluteNamespace then '' else @base
+      suffix = if subNamespace != '' && !subNamespace[subNamespace.length-1] == ':' then ':' else ''
+      nemDebug.enabled(prefix+@namespace+subNamespace+suffix)
     
     enable: (namespaces, opts={}) ->
-      prefix = if !!opts.absoluteNamespace then '' else @base+':'
+      prefix = if !!opts.absoluteNamespace then '' else @base
       names = namespaces.split(/[, ]/g)
       enableNames = []
       for name,i in names
         if name.length == 0
           continue
+        minus = ''
+        if name[0] == '-'
+          name = name.substr(1)
+          minus = '-'
         if name[name.length-1] == '*'
-          enableNames.push(prefix+name)
+          enableNames.push(minus+prefix+name)
         else if name[name.length-1] == ':'
-          enableNames.push(prefix+name+'*')
+          enableNames.push(minus+prefix+name+'*')
         else
-          enableNames.push(prefix+name+':*')
+          enableNames.push(minus+prefix+name+':*')
       nemDebug.enable(enableNames.join(','))
 
   @decorator = ['$log', ($delegate) ->

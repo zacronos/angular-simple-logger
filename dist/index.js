@@ -1,9 +1,9 @@
 /**
  *  angular-simple-logger
  *
- * @version: 0.1.7
+ * @version: 0.1.11
  * @author: Nicholas McCready
- * @date: Fri Jan 29 2016 13:26:06 GMT-0500 (EST)
+ * @date: Mon Feb 01 2016 16:51:16 GMT-0500 (EST)
  * @license: MIT
  */
 var angular = require('angular');
@@ -51,19 +51,23 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
       return true;
     };
     Logger = (function() {
-      function Logger($log1, base, namespace1) {
+      function Logger($log1, base, namespace1, currentLevel) {
         var augmentedNamespace, fn, k, len1, level, ref;
         this.$log = $log1;
         this.base = base;
         this.namespace = namespace1 != null ? namespace1 : '';
+        this.currentLevel = currentLevel != null ? currentLevel : LEVELS.error;
         if (!_isValidLogObject(this.$log)) {
           throw new Error('@$log is invalid');
         }
         this.doLog = true;
+        if (this.base !== '' && this.base[this.base.length - 1] !== ':') {
+          this.base += ':';
+        }
         if (this.namespace !== '' && this.namespace[this.namespace.length - 1] !== ':') {
           this.namespace += ':';
         }
-        augmentedNamespace = this.base + ':' + this.namespace;
+        augmentedNamespace = this.base + this.namespace;
         if (_debugCache[augmentedNamespace] == null) {
           _debugCache[augmentedNamespace] = nemDebug(augmentedNamespace);
         }
@@ -94,7 +98,6 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
           fn(level);
         }
         this.LEVELS = LEVELS;
-        this.currentLevel = LEVELS.error;
       }
 
       Logger.prototype.spawn = function(namespace) {
@@ -104,23 +107,31 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
         if (typeof namespace !== 'string') {
           throw new Error('Bad namespace given');
         }
-        return new Logger(this.$log, this.base, this.namespace + namespace);
+        return new Logger(this.$log, this.base, this.namespace + namespace, this.currentLevel);
       };
 
-      Logger.prototype.isEnabled = function(subNamespace) {
-        var suffix;
+      Logger.prototype.isEnabled = function(subNamespace, opts) {
+        var prefix, suffix;
         if (subNamespace == null) {
           subNamespace = '';
+        }
+        if (opts == null) {
+          opts = {};
         }
         if (!this.doLog || LEVELS['debug'] < this.currentLevel) {
           return false;
         }
-        suffix = subNamespace !== '' && !subNamespace.endsWith(':') ? ':' : '';
-        return nemDebug.enabled(this.base + this.namespace + subNamespace + suffix);
+        prefix = !!opts.absoluteNamespace ? '' : this.base;
+        suffix = subNamespace !== '' && !subNamespace[subNamespace.length - 1] === ':' ? ':' : '';
+        return nemDebug.enabled(prefix + this.namespace + subNamespace + suffix);
       };
 
-      Logger.prototype.enable = function(namespaces) {
-        var enableNames, i, k, len1, name, names;
+      Logger.prototype.enable = function(namespaces, opts) {
+        var enableNames, i, k, len1, minus, name, names, prefix;
+        if (opts == null) {
+          opts = {};
+        }
+        prefix = !!opts.absoluteNamespace ? '' : this.base;
         names = namespaces.split(/[, ]/g);
         enableNames = [];
         for (i = k = 0, len1 = names.length; k < len1; i = ++k) {
@@ -128,12 +139,17 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
           if (name.length === 0) {
             continue;
           }
+          minus = '';
+          if (name[0] === '-') {
+            name = name.substr(1);
+            minus = '-';
+          }
           if (name[name.length - 1] === '*') {
-            enableNames.push(this.base + ':' + name);
+            enableNames.push(minus + prefix + name);
           } else if (name[name.length - 1] === ':') {
-            enableNames.push(this.base + ':' + name + '*');
+            enableNames.push(minus + prefix + name + '*');
           } else {
-            enableNames.push(this.base + ':' + name + ':*');
+            enableNames.push(minus + prefix + name + ':*');
           }
         }
         return nemDebug.enable(enableNames.join(','));
