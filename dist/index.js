@@ -1,9 +1,9 @@
 /**
  *  angular-simple-logger
  *
- * @version: 0.1.11
+ * @version: 0.1.16
  * @author: Nicholas McCready
- * @date: Mon Feb 01 2016 16:51:16 GMT-0500 (EST)
+ * @date: Tue Feb 02 2016 15:55:36 GMT-0500 (EST)
  * @license: MIT
  */
 var angular = require('angular');
@@ -51,10 +51,10 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
       return true;
     };
     Logger = (function() {
-      function Logger($log1, base, namespace1, currentLevel) {
-        var augmentedNamespace, fn, k, len1, level, ref;
+      function Logger($log1, base1, namespace1, currentLevel) {
+        var augmentedNamespace, fn, forceDebugFileAndLine, k, len1, level, ref;
         this.$log = $log1;
-        this.base = base;
+        this.base = base1;
         this.namespace = namespace1 != null ? namespace1 : '';
         this.currentLevel = currentLevel != null ? currentLevel : LEVELS.error;
         if (!_isValidLogObject(this.$log)) {
@@ -64,10 +64,15 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
         if (this.base !== '' && this.base[this.base.length - 1] !== ':') {
           this.base += ':';
         }
-        if (this.namespace !== '' && this.namespace[this.namespace.length - 1] !== ':') {
-          this.namespace += ':';
+        if (this.namespace === '') {
+          augmentedNamespace = this.base + ':__default_namespace__:';
+          forceDebugFileAndLine = true;
+        } else {
+          if (this.namespace[this.namespace.length - 1] !== ':') {
+            this.namespace += ':';
+          }
+          augmentedNamespace = this.base + this.namespace;
         }
-        augmentedNamespace = this.base + this.namespace;
         if (_debugCache[augmentedNamespace] == null) {
           _debugCache[augmentedNamespace] = nemDebug(augmentedNamespace);
         }
@@ -98,16 +103,20 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
           fn(level);
         }
         this.LEVELS = LEVELS;
+        this.nemDebug = nemDebug;
       }
 
-      Logger.prototype.spawn = function(namespace) {
+      Logger.prototype.spawn = function(namespace, base) {
         if (namespace == null) {
           namespace = '';
+        }
+        if (base == null) {
+          base = this.base;
         }
         if (typeof namespace !== 'string') {
           throw new Error('Bad namespace given');
         }
-        return new Logger(this.$log, this.base, this.namespace + namespace, this.currentLevel);
+        return new Logger(this.$log, base, this.namespace + namespace, this.currentLevel);
       };
 
       Logger.prototype.isEnabled = function(subNamespace, opts) {
