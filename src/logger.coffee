@@ -50,10 +50,10 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
 
       @LEVELS = LEVELS
 
-    spawn: (namespace='') ->
+    spawn: (namespace='', base=@base) ->
       if typeof(namespace) != 'string'
         throw new Error('Bad namespace given')
-      return new Logger(@$log, @base, @namespace+namespace, @currentLevel)
+      return new Logger(@$log, base, @namespace+namespace, @currentLevel)
         
     isEnabled: (subNamespace='', opts={}) ->
       if !@doLog || LEVELS['debug'] < @currentLevel
