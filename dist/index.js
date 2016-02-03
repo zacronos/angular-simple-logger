@@ -1,9 +1,9 @@
 /**
  *  angular-simple-logger
  *
- * @version: 0.1.20
+ * @version: 0.1.21
  * @author: Nicholas McCready
- * @date: Wed Feb 03 2016 11:38:03 GMT-0500 (EST)
+ * @date: Wed Feb 03 2016 12:32:49 GMT-0500 (EST)
  * @license: MIT
  */
 var angular = require('angular');
@@ -31,7 +31,7 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
     var LEVELS, Logger, _debugCache, _fns, _isValidLogObject, j, key, len, nemDebug, val;
     nemDebug = nemDebugProvider.debug;
     _debugCache = {};
-    _fns = ['debug', 'info', 'warn', 'error', 'log'];
+    _fns = ['debug', 'info', 'warn', 'error'];
     LEVELS = {};
     for (key = j = 0, len = _fns.length; j < len; key = ++j) {
       val = _fns[key];

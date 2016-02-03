@@ -45,7 +45,7 @@ describe 'nemLogging.nemDebug', ->
         expect(newLogger.debug).toBeDefined()
         expect(newLogger.debugInstance.namespace).toBe('frontend:worker:a:')
         expect(newLogger.debugInstance.enabled).toBeFalsy()
-        ['debug', 'info', 'warn', 'error', 'log'].forEach (fnName) ->
+        ['debug', 'info', 'warn', 'error'].forEach (fnName) ->
           expect(typeof newLogger[fnName]).toBe('function')
 
       it 'enabled logger', ->

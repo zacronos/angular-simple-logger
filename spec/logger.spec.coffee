@@ -2,13 +2,11 @@
 describe 'nemLogging.nemSimpleLogger', ->
   beforeEach ->
     @createSpyLogger = ->
-      @log = ->
       @info = ->
       @debug = ->
       @warn = ->
       @error = ->
 
-      spyOn(@, 'log')
       spyOn(@, 'info')
       spyOn(@, 'debug')
       spyOn(@, 'warn')
@@ -31,7 +29,7 @@ describe 'nemLogging.nemSimpleLogger', ->
     expect(@subject).toBeDefined()
 
   describe 'default', ->
-    ['info', 'warn', {called:'error'}, {called:'log'}].forEach (testName) ->
+    ['info', 'warn', {called:'error'}].forEach (testName) ->
       {called} = testName
       testName = if typeof testName == 'string' then testName else testName.called
       it testName, ->
@@ -48,14 +46,14 @@ describe 'nemLogging.nemSimpleLogger', ->
         nemSimpleLogger.currentLevel = nemSimpleLogger.LEVELS.debug
         @subject = nemSimpleLogger
     describe 'single arg', ->
-      ['info', 'warn', 'error', 'log'].forEach (testName) ->
+      ['info', 'warn', 'error'].forEach (testName) ->
         it testName, ->
           @subject[testName]('blah')
           expect(@logger[testName]).toHaveBeenCalled()
           expect(@logger[testName]).toHaveBeenCalledWith('blah')
 
     describe 'multi arg', ->
-      ['info', 'warn', 'error', 'log'].forEach (testName) ->
+      ['info', 'warn', 'error'].forEach (testName) ->
         it testName, ->
           @subject[testName]('blah','HI')
           expect(@logger[testName]).toHaveBeenCalled()
@@ -65,10 +63,10 @@ describe 'nemLogging.nemSimpleLogger', ->
     describe 'by LEVELS +1', ->
       beforeEach ->
         inject (nemSimpleLogger) =>
-          nemSimpleLogger.currentLevel = nemSimpleLogger.LEVELS.log + 1
+          nemSimpleLogger.currentLevel = nemSimpleLogger.LEVELS.error + 1
           @subject = nemSimpleLogger
 
-      ['info', 'warn', 'error', 'log'].forEach (testName) ->
+      ['info', 'warn', 'error'].forEach (testName) ->
         it testName, ->
           @subject[testName]('blah')
           expect(@logger[testName]).not.toHaveBeenCalled()
@@ -79,7 +77,7 @@ describe 'nemLogging.nemSimpleLogger', ->
           nemSimpleLogger.doLog = false
           @subject = nemSimpleLogger
 
-      ['info', 'warn', 'error', 'log'].forEach (testName) ->
+      ['info', 'warn', 'error'].forEach (testName) ->
         it testName, ->
           @subject[testName]('blah')
           expect(@logger[testName]).not.toHaveBeenCalled()

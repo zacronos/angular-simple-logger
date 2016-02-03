@@ -22,7 +22,7 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
     var LEVELS, Logger, _debugCache, _fns, _isValidLogObject, j, key, len, nemDebug, val;
     nemDebug = nemDebugProvider.debug;
     _debugCache = {};
-    _fns = ['debug', 'info', 'warn', 'error', 'log'];
+    _fns = ['debug', 'info', 'warn', 'error'];
     LEVELS = {};
     for (key = j = 0, len = _fns.length; j < len; key = ++j) {
       val = _fns[key];

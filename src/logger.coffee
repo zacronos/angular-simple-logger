@@ -3,7 +3,7 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
   nemDebug = nemDebugProvider.debug
   _debugCache = {}
 
-  _fns = ['debug', 'info', 'warn', 'error', 'log']
+  _fns = ['debug', 'info', 'warn', 'error']
   LEVELS = {}
   for val, key in _fns
     LEVELS[val] = key
