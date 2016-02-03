@@ -72,7 +72,10 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
           return function() {
             var args;
             args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-            if (_this.doLog && LEVELS['debug'] >= _this.currentLevel) {
+            if (_this.doLog && LEVELS['debug'] >= _this.currentLevel && _this.debugInstance.enabled) {
+              if (typeof args[0] === 'function') {
+                args[0] = args[0]();
+              }
               return _this.debugInstance.apply(_this, args);
             }
           };
@@ -84,6 +87,9 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
               var args, ref1;
               args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
               if (_this.doLog && LEVELS[level] >= _this.currentLevel) {
+                if (typeof args[0] === 'function') {
+                  args[0] = args[0]();
+                }
                 return (ref1 = _this.$log)[level].apply(ref1, args);
               }
             };

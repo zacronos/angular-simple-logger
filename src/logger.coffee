@@ -40,12 +40,16 @@ angular.module('nemLogging').provider 'nemSimpleLogger',[ 'nemDebugProvider', (n
 
       # Overide logeObject.debug with a nemDebug instance; see: https://github.com/visionmedia/debug/blob/master/Readme.md
       @debug = (args...) =>
-        if @doLog && LEVELS['debug'] >= @currentLevel
+        if @doLog && LEVELS['debug'] >= @currentLevel && @debugInstance.enabled
+          if typeof(args[0]) == 'function'
+            args[0] = args[0]()
           @debugInstance(args...)
       for level in _fns.slice(1)
         do (level) =>
           @[level] = (args...) =>
             if @doLog && LEVELS[level] >= @currentLevel
+              if typeof(args[0]) == 'function'
+                args[0] = args[0]()
               @$log[level](args...)
 
       @LEVELS = LEVELS

@@ -1,9 +1,9 @@
 /**
  *  angular-simple-logger
  *
- * @version: 0.1.18
+ * @version: 0.1.20
  * @author: Nicholas McCready
- * @date: Tue Feb 02 2016 16:31:56 GMT-0500 (EST)
+ * @date: Wed Feb 03 2016 11:38:03 GMT-0500 (EST)
  * @license: MIT
  */
 var angular = require('angular');
@@ -81,7 +81,10 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
           return function() {
             var args;
             args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-            if (_this.doLog && LEVELS['debug'] >= _this.currentLevel) {
+            if (_this.doLog && LEVELS['debug'] >= _this.currentLevel && _this.debugInstance.enabled) {
+              if (typeof args[0] === 'function') {
+                args[0] = args[0]();
+              }
               return _this.debugInstance.apply(_this, args);
             }
           };
@@ -93,6 +96,9 @@ angular.module('nemLogging').provider('nemSimpleLogger', [
               var args, ref1;
               args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
               if (_this.doLog && LEVELS[level] >= _this.currentLevel) {
+                if (typeof args[0] === 'function') {
+                  args[0] = args[0]();
+                }
                 return (ref1 = _this.$log)[level].apply(ref1, args);
               }
             };
